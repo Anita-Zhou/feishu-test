@@ -1,24 +1,25 @@
 export default async function handler(req, res) {
-  if (req.method === "GET" && req.query.challenge) {
-    return res.status(200).send(req.query.challenge);
-  }
-
-  if (req.method !== "POST") {
-    return res.status(200).send("OK");
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
-    const data = req.body;
-    console.log("📥 收到请求:", JSON.stringify(data, null, 2));
+    const body = req.body;
 
-    const projectName = data.project_name || data.event?.record?.fields?.["项目名称"];
-    
-    if (projectName) {
-      console.log("🎉 项目名称:", projectName);
-    }
+    console.log("====== Feishu Webhook Received ======");
+    console.log("Full Body:", body);
 
-    return res.status(200).send("success");
-  } catch (e) {
-    return res.status(500).send("error: " + e.message);
+    // 取项目名称
+    const projectName = body?.project_name || body?.record?.project_name;
+
+    console.log("项目名称:", projectName);
+
+    return res.status(200).json({
+      success: true,
+      received_project_name: projectName,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ success: false });
   }
 }
